@@ -1,101 +1,129 @@
+"use client";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import Hero from "./components/hero";
+import { addToCart } from "./store/cartslice";
+import { useDispatch } from "react-redux";
+import toast, { Toaster } from "react-hot-toast";
+import { MdAddShoppingCart } from "react-icons/md";
+import Footer from "./components/footer";
+import AdPage from "./components/ads";
+interface Product {
+  _id: number;
+  title: string;
+  description: string;
+  price: string;
+  imageUrl: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [product, setProduct] = useState<Product[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const dispatch = useDispatch();
+  const fetchData = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/products");
+      const response = await res.json();
+      setProduct(response.data);
+      // console.log(response);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  function addTocart(selectedProduct: Product) {
+    const cartItem = {
+      _id: selectedProduct._id,
+      title: selectedProduct.title,
+      image: selectedProduct.imageUrl,
+      price: parseFloat(selectedProduct.price),
+      quantity: 1,
+    };
+    dispatch(addToCart(cartItem));
+    toast.success("Product successfully added to cart");
+    console.log("click");
+  }
+
+  return (
+    <>
+      <Toaster />
+      <Hero />
+      <AdPage />
+      <div className="w-full h-screen  absolute top-[950px] bg-slate-100 p-10 z-0">
+        <h1 className="text-3xl text-black text-center font-bold text-pretty">
+          {" "}
+          Featured Products
+        </h1>
+
+        <div className="flex  justify-center gap-6 mt-12">
+          {product.map((ele) => (
+            <div
+              className="w-64  h-80 bg-white border shadow-inner p-3 flex flex-col gap-1"
+              key={ele._id}
+            >
+              <div className="relative w-48 h-48  mx-auto flex justify-center items-center  ">
+                <Image
+                  alt="image"
+                  src={ele.imageUrl}
+                  // width={100}
+                  // height={100}
+                  layout="fill"
+                  objectFit="contain"
+                  className="rounded-lg"
+                ></Image>
+              </div>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-row justify-between mt-2">
+                  <div className="flex flex-col">
+                    <span className="text-xl font-bold"> {ele?.title}</span>
+                    <p className="text-xs text-gray-700">{ele.description}</p>
+                  </div>
+                  <span className="font-bold  text-red-600">
+                    Rs.{ele.price}
+                  </span>
+                </div>
+                {/* <button
+                  onClick={() => addTocart(ele)}
+                  className="hover:bg-sky-700 text-gray-50 bg-sky-800 py-2"
+                >
+                  Add to cart
+                </button> */}
+
+                <button
+                  onClick={() => addTocart(ele)}
+                  className="group relative inline-flex items-center justify-center overflow-hidden border-2 border-sky-700 p-4 px-6 py-3 font-medium text-indigo-600 shadow-md transition duration-300 ease-out hover:border-4 hover:border-double"
+                >
+                  <span className="ease absolute inset-0 flex h-full w-full -translate-x-full items-center justify-center bg-sky-700 text-white duration-300 group-hover:translate-x-0">
+                    {/* <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      ></path>
+                    </svg> */}
+                    <MdAddShoppingCart size={25} />
+                  </span>
+                  <span className="ease absolute flex h-full w-full transform items-center justify-center text-black transition-all duration-300 group-hover:translate-x-full">
+                    Add to Cart
+                  </span>
+                  <span className="invisible relative"> Add to Cart</span>
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }
